@@ -58,14 +58,14 @@ LDAP_SYNC_USER_CHANGE_FIELDCASE = "lower" #None,"lower","upper"
 LDAP_SYNC_USER_THUMBNAILPHOTO_NAME = "{username}_{uuid4}.jpg" 
    #It allows the parameters {username}, {uuid4} and datetime.strftime
 ```
-Change the values to the one you need. On models.py and admin.py there are samples of a working User Profile.
+Change the values to the one you need. On `models.py` and `admin.py` there are samples of a working User Profile.
 You can add the AD Fields you need. By default AD fields are camelCase, it's preferred to lowercase them to fit
 Django best practices.
-The model MUST use the same names as the AD fields, only lowercased (if LDAP_SYNC_USER_CHANGE_FIELDCASE = "lower"
+The model MUST use the same names as the AD fields, only lowercased (if `LDAP_SYNC_USER_CHANGE_FIELDCASE = "lower"`
 is used).
 
 
-### Manual Sync (and cron.d scheduling)
+### Manual Sync (and `cron.d` scheduling)
 
 ```sh
 python manage.py syncldap
@@ -80,7 +80,7 @@ python manage.py syncldap incremental
 ```
 The first synchronization will always be FULL
 
-### Scheduled Sync on settings.py
+### Scheduled Sync on `settings.py`
 ```python
 from datetime import timedelta
       #One full sync each 5 days: 1sync/hour x 24 hours x 5 days = 120 syncs
@@ -220,7 +220,7 @@ Yes. The main use is to overcome the AD Primary Group limitation (it's weird to 
 - I don't see the thumbnailPhoto on my system:
 
 Maybe you don't have correctly configured the media or static folder, see [Django Managing static files]
-Then on templates you can use {{ request.user.employee.thumbnailphoto.url }} to link it
+Then on templates you can use `{{ request.user.employee.thumbnailphoto.url }}` to link it
 
 [django-ldap-sync]: https://github.com/jbittel/django-ldap-sync
 [Celery]: http://www.celeryproject.org
