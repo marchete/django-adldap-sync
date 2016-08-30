@@ -20,10 +20,12 @@ can be fired manually on demand, via an automatic cron script or as a periodic
 
 ### Installation
 Not packaged in PIP yet, sorry!
-You must manually add the "adldap_sync" folder to your project, and add your config on settings.py
+You must manually add the "adldap_sync" folder to your project, and add your config on `settings.py`
 Then update your database:
->python manage.py makemigrations
->python manage.py migrate
+```sh
+python manage.py makemigrations
+python manage.py migrate
+```
 It should create a new table called adldap_sync_adldap_sync. It keeps track of the last time the system was sync'ed
 
 ### Minimal config on settings.py 
