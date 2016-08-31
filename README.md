@@ -13,11 +13,11 @@ can be fired manually on demand, via an automatic cron script or as a periodic
 ### Features
   - Works on Python 3.5 and Django 1.10, tested both on Windows 10 and Centos 7.2. Untested on other Python versions or Django
   - Tested against Active Directory on Windows Server 2008R2. Must work on any other AD, and maybe another generic LDAP server.
-  - One way read-only sync from Active Directory/LDAP to Django
+  - One way read-only sync from Active Directory/LDAP to Django, with AD/LDAP server failover.
   - Synchronizes Users, Groups and Group Memberships. AD Primary Group is added via a manual config in settings.py.
-  - Allows incremental synchronization, based on the last timestamp. This reduces the sync time to the minimum
-  - Synchronizes AD User Data to both User Model and User Profiles (without external callbacks)
-  - Synchronizes thumbnailPhoto or jpegPhoto to an ImageField
+  - Allows incremental synchronization, based on the last timestamp. This reduces the sync time to the minimum.
+  - Synchronizes AD User Data to both User Model and User Profiles (without external callbacks).
+  - Synchronizes thumbnailPhoto or jpegPhoto to an ImageField.
 
 ### Installation
 Not packaged in PIP yet, sorry!
