@@ -35,7 +35,8 @@ It should create a new table called `adldap_sync`. It keeps track of the last ti
 
 ### Minimal config on `settings.py` 
 Be sure that `USE_TZ = True` . Incremental Sync uses TimeZone
-`settings.py`
+
+On `settings.py` add this at the end of the file, and configure the values:
 ```python
 INSTALLED_APPS.append('adldap_sync');
 LDAP_SYNC_BIND_URI = ["ldap://dc1.example.com:389","ldap://dc2.example.com:389",] 
