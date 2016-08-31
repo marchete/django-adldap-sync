@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     can_import_settings = True
     help = 'Synchronize users and groups from an authoritative LDAP server'
+    ATTRIBUTE_DISABLED = 'userAccountControl'
+    FLAG_UF_ACCOUNT_DISABLE = 2
     ### CONFIG VARIABLES. Default Values
     #AD/LDAP CONNECTION VARS
     conf_LDAP_SYNC_BIND_URI = []  # A string or an array for failover, i.e.  ["ldap://dc1.example.com:389","ldap://dc2.example.com:389",]
@@ -41,7 +43,8 @@ class Command(BaseCommand):
     conf_LDAP_SYNC_USER_FILTER = '(&(objectCategory=person)(objectClass=user))'
     conf_LDAP_SYNC_USER_FILTER_INCREMENTAL = '(&(objectCategory=person)(objectClass=user)(whenchanged>=?))'
     conf_LDAP_SYNC_USER_ATTRIBUTES = {"sAMAccountName": "username", "givenName": "first_name", "sn": "last_name", "mail": "email", }
-    conf_LDAP_SYNC_USER_EXTRA_ATTRIBUTES = []  # ['userAccountControl','company','department','distinguishedName','division','extensionName','manager','mobile','physicalDeliveryOfficename','title','thumbnailPhoto']
+    conf_LDAP_SYNC_USER_EXTRA_ATTRIBUTES = [ATTRIBUTE_DISABLED] 
+    #['userAccountControl','company','department','distinguishedName','division','extensionName','manager','mobile','physicalDeliveryOfficename','title','thumbnailPhoto']
     conf_LDAP_SYNC_USER_EXTRA_PROFILES = []  # appname.modelname, like adldap_sync.Employee
     conf_LDAP_SYNC_USER_EXEMPT_FROM_SYNC = ['admin', 'administrator', 'administrador', 'guest']
     conf_LDAP_SYNC_USER_CALLBACKS = []
@@ -52,7 +55,7 @@ class Command(BaseCommand):
     conf_LDAP_SYNC_USER_CHANGE_FIELDCASE = "lower"  # None,"lower","upper"
     conf_LDAP_SYNC_MULTIVALUE_SEPARATOR = "|"
     conf_LDAP_SYNC_USERNAME_FIELD = None
-    conf_LDAP_SYNC_REMOVED_USER_CALLBACKS = []
+    conf_LDAP_SYNC_REMOVED_USER_CALLBACKS = ['adldap_sync.callbacks.removed_user_deactivate']
 
     #GROUPS
     conf_LDAP_SYNC_GROUP = True
@@ -172,6 +175,9 @@ class Command(BaseCommand):
             self.conf_LDAP_SYNC_USER_SHOW_PROGRESS = self.load_boolconfig('LDAP_SYNC_USER_SHOW_PROGRESS', self.conf_LDAP_SYNC_USER_SHOW_PROGRESS)
             self.conf_LDAP_SYNC_USER_SET_UNUSABLE_PASSWORD = self.load_boolconfig('LDAP_SYNC_USER_SET_UNUSABLE_PASSWORD', self.conf_LDAP_SYNC_USER_SET_UNUSABLE_PASSWORD)
             self.conf_LDAP_SYNC_USER_EXTRA_ATTRIBUTES = self.load_listconfig('LDAP_SYNC_USER_EXTRA_ATTRIBUTES', self.conf_LDAP_SYNC_USER_EXTRA_ATTRIBUTES, True)
+            #We need the userAccountControl attribute for Disabling check, so we added it if missing on the ldap query
+            if (self.ATTRIBUTE_DISABLED not in self.conf_LDAP_SYNC_USER_EXTRA_ATTRIBUTES):
+                self.conf_LDAP_SYNC_USER_EXTRA_ATTRIBUTES.append(self.ATTRIBUTE_DISABLED)
             self.conf_LDAP_SYNC_USER_EXTRA_PROFILES = self.load_listconfig('LDAP_SYNC_USER_EXTRA_PROFILES', self.conf_LDAP_SYNC_USER_EXTRA_PROFILES, True)
             self.conf_LDAP_SYNC_USER_EXEMPT_FROM_SYNC = self.load_listconfig('LDAP_SYNC_USER_EXEMPT_FROM_SYNC', self.conf_LDAP_SYNC_USER_EXEMPT_FROM_SYNC, True)
             self.conf_LDAP_SYNC_USER_CALLBACKS = self.load_listconfig('LDAP_LDAP_SYNC_USER_CALLBACKS', self.conf_LDAP_SYNC_USER_CALLBACKS, True)
@@ -302,7 +308,6 @@ class Command(BaseCommand):
         #Load extra profiles. This way we don't even need a callback. The same code is used to populate both auth_user and user_profile
         for list_profile in self.conf_LDAP_SYNC_USER_EXTRA_PROFILES:
             list_profiles.append((list_profile, apps.get_model(list_profile)))
-        ldap_usernames = set()
 
         if not model._meta.get_field(self.conf_LDAP_SYNC_USERNAME_FIELD).unique:
             raise ImproperlyConfigured("Field '%s' must be unique" % self.conf_LDAP_SYNC_USERNAME_FIELD)
@@ -345,9 +350,42 @@ class Command(BaseCommand):
                 'defaults': defaults,
             }
 
+            ### Users Disable
+            #Check disable bit 
+            user_account_control = int(attributes[self.ATTRIBUTE_DISABLED][0].decode('utf-8'))
+            user_is_disabled = (user_account_control and ((user_account_control & self.FLAG_UF_ACCOUNT_DISABLE) == self.FLAG_UF_ACCOUNT_DISABLE))
+            if user_is_disabled:
+                try:
+                    #If disabled, we need to check if the user already exists on Django
+                    user = model.objects.get(**{self.conf_LDAP_SYNC_USERNAME_FIELD + '__iexact': username,})
+                    if (not user):
+                        #Ignore disabled users, we won't import it, only update it
+                        continue
+                except Exception as e:
+                    #Ignore disabled users, we won't import it, only update it
+                    continue
+                else:
+                    #If the user already exists on Django we'll run the callbacks
+                    if (self.conf_LDAP_SYNC_REMOVED_USER_CALLBACKS):
+                        self.stats_user_deleted += 1
+                    for path in self.conf_LDAP_SYNC_REMOVED_USER_CALLBACKS:
+                        logger.debug("Calling %s for user %s" % (path, username))
+                        callback = import_string(path)
+                        callback(user)
+            ### User creation and sinchronization
             updated = False
             try:
-                user, created = model.objects.get_or_create(**kwargs)
+                if user_is_disabled:
+                    created = False
+                    #reload it because it may be deleted
+                    user = model.objects.get(**{self.conf_LDAP_SYNC_USERNAME_FIELD + '__iexact': username,})
+                else:
+                    user, created = model.objects.get_or_create(**kwargs)
+            except (ObjectDoesNotExist) as e:
+                if (user_is_disabled):
+                    continue
+                else:
+                    raise e
             except (IntegrityError, DataError) as e:
                 logger.error("Error creating user %s: %s" % (username, e))
                 self.stats_user_errors += 1
@@ -378,9 +416,6 @@ class Command(BaseCommand):
                 except Exception as e:
                     logger.error("Error saving user %s: %s" % (username, e))
                     self.stats_user_errors += 1
-
-                if self.conf_LDAP_SYNC_REMOVED_USER_CALLBACKS:
-                    ldap_usernames.add(username)
                 ### LDAP Sync Membership
                 if (self.conf_LDAP_SYNC_GROUP_MEMBERSHIP):
                     membership_uri, ldap_membership = self.get_ldap_user_membership(attributes[self.conf_LDAP_SYNC_GROUP_MEMBERSHIP_DN_FIELD][0].decode('utf-8'))
@@ -497,16 +532,6 @@ class Command(BaseCommand):
                     #If either user record or any profile record is changed, we'll mark it as updated.
             if (updated):
                 self.stats_user_updated += 1
-            #Now we'll add the group membership
-        if self.conf_LDAP_SYNC_REMOVED_USER_CALLBACKS:
-            django_usernames = set(model.objects.values_list(self.conf_LDAP_SYNC_USERNAME_FIELD, flat=True))
-            for username in django_usernames - ldap_usernames:
-                self.stats_user_deleted += 1
-                user = model.objects.get(**{self.conf_LDAP_SYNC_USERNAME_FIELD: username})
-                for path in self.conf_LDAP_SYNC_REMOVED_USER_CALLBACKS:
-                    callback = import_string(path)
-                    callback(user)
-                    logger.debug("Called %s for user %s" % (path, username))
 
         logger.info("Users are synchronized")
 
