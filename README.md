@@ -125,7 +125,6 @@ from datetime import timedelta
     #These users won't be created or synced
     LDAP_SYNC_USER_CALLBACKS = []  #You can manually populate your User Profiles via callbacks
     LDAP_SYNC_USER_SET_UNUSABLE_PASSWORD = True
-    LDAP_SYNC_USER_REMOVAL_ACTION = 'DEACTIVATE' 
     LDAP_SYNC_USER_SHOW_PROGRESS = True 
     #It will show the user sync progress, useful on large AD setups to check the % progress
     LDAP_SYNC_USER_THUMBNAILPHOTO_NAME = "{username}_{uuid4}.jpg" 
@@ -135,6 +134,7 @@ from datetime import timedelta
     #If an AD attribute is multivalued, it will be joined on one string as "value1|value2|value3"
     LDAP_SYNC_USERNAME_FIELD = None 
     LDAP_SYNC_REMOVED_USER_CALLBACKS = []
+    #`adldap_sync.callbacks.removed_user_deactivate` and `adldap_sync.callbacks.removed_user_delete`
         
     #GROUPS
     LDAP_SYNC_GROUP = True
@@ -144,7 +144,6 @@ from datetime import timedelta
     LDAP_SYNC_GROUP_FILTER = '(objectClass=group)'
     LDAP_SYNC_GROUP_FILTER_INCREMENTAL = '(&(objectClass=group)(whenchanged>=?))'
     LDAP_SYNC_GROUP_ATTRIBUTES = { "cn": "name"}
-    LDAP_SYNC_GROUP_REMOVAL_ACTION = 'KEEP'
 
     #GROUP MEMBERSHIP
     LDAP_SYNC_GROUP_MEMBERSHIP = True
