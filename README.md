@@ -136,8 +136,8 @@ from datetime import timedelta
     LDAP_SYNC_MULTIVALUE_SEPARATOR = "|"  
     #If an AD attribute is multivalued, it will be joined on one string as "value1|value2|value3"
     LDAP_SYNC_USERNAME_FIELD = None 
-    LDAP_SYNC_REMOVED_USER_CALLBACKS = []
-    #`adldap_sync.callbacks.removed_user_deactivate` and `adldap_sync.callbacks.removed_user_delete`
+    LDAP_SYNC_REMOVED_USER_CALLBACKS = ['adldap_sync.callbacks.removed_user_deactivate']
+    #Also you can use 'adldap_sync.callbacks.removed_user_delete' to completely delete the Django user
         
     #GROUPS
     LDAP_SYNC_GROUP = True
