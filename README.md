@@ -46,8 +46,7 @@ LDAP_SYNC_BIND_PASS = "MyPassword"
 
 With that you have a Synchronization from AD to Django (Users, Groups and Memberships), with a Full import each 5 incrementals.
 
-Minimal config with an User Profile 
-----------------------------------
+### Minimal config with an User Profile 
 Add this to the previous `settings.py`
 ```python
 LDAP_SYNC_USER_EXTRA_ATTRIBUTES = ['userAccountControl','company','department','distinguishedName','division',\
