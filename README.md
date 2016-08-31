@@ -28,8 +28,8 @@ python manage.py migrate
 ```
 It should create a new table called `adldap_sync`. It keeps track of the last time the system was sync'ed
 
-### Minimal config on settings.py 
-Be sure that USE_TZ = True . Incremental Sync uses TimeZone
+### Minimal config on `settings.py` 
+Be sure that `USE_TZ = True` . Incremental Sync uses TimeZone
 `settings.py`
 ```python
 INSTALLED_APPS.append('adldap_sync');
