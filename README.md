@@ -20,15 +20,13 @@ can be fired manually on demand, via an automatic cron script or as a periodic
   - Synchronizes thumbnailPhoto or jpegPhoto to an ImageField.
 
 ### Installation
-Not packaged in PIP yet, sorry!
-You must manually add the `adldap_sync` folder to your project, and add your config on `settings.py`. 
-You also need the pyldap package.
 ```sh
-pip install pyldap
+pip install django_adldap_sync
 ```
+You must add the app configuration on your `settings.py` file (at least the minimal config as below). 
 Then update your database:
 ```sh
-python manage.py makemigrations
+python manage.py makemigrations adldap_sync
 python manage.py migrate
 ```
 It should create a new table called `adldap_sync`. It keeps track of the last time the system was sync'ed
