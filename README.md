@@ -20,7 +20,11 @@ can be fired manually on demand, via an automatic cron script or as a periodic
 
 ### Installation
 Not packaged in PIP yet, sorry!
-You must manually add the `adldap_sync` folder to your project, and add your config on `settings.py`
+You must manually add the `adldap_sync` folder to your project, and add your config on `settings.py`. 
+You also need the pyldap package.
+```sh
+pip install pyldap
+```
 Then update your database:
 ```sh
 python manage.py makemigrations
