@@ -46,6 +46,7 @@ class ADldap_Sync(models.Model):
     class Meta:
         verbose_name = _("Active Directory/LDAP Sync Record")
         verbose_name_plural = _("Active Directory/LDAP Sync Records")
+        db_table = "adldap_sync"
 
 
 ## Class Sample for User Profile

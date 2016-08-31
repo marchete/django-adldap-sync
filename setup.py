@@ -21,7 +21,7 @@ setup(
     download_url='https://github.com/marchete/django-adldap-sync',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['python-ldap>=2.4.13'],
+    install_requires=['pyldap>=2.4.25.1'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
