@@ -1,7 +1,8 @@
 #django-adldap-sync
 
 
-Overhaul of [django-ldap-sync]
+Overhaul of [django-ldap-sync].
+
 django-adldap-sync provides a Django management command that synchronizes LDAP
 users, groups and memberships from an Active Directory server. 
 
