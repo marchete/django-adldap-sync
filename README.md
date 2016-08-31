@@ -211,10 +211,6 @@ Yes, you can sync it either directly (adding it to the LDAP_SYNC_USER_EXTRA_PROF
 LDAP_SYNC_USER_CALLBACKS is more flexible as you may have any field name, and do extra checking.
 But for me the EXTRA PROFILES option works ok, and is way easier.
 
-- Can I have more than 1 User Profile?:
-
-Yes
-
 - Can I add more than 1 Group Membership in LDAP_SYNC_GROUP_MEMBERSHIP_ADD_DEFAULT?:
 
 Yes. The main use is to overcome the AD Primary Group limitation (it's weird to retrieve), but can be used to add more groups.
