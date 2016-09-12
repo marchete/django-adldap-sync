@@ -322,7 +322,7 @@ class Command(BaseCommand):
             try:
                 for name, attribute in attributes.items():
                     try:
-                        if ((name.lower() == 'thumbnailphoto') or (name.lower() == 'jpegphoto')):
+                        if ((name.lower() == 'thumbnailphoto') or (name.lower() == 'jpegphoto') or (name.lower() == 'thumbnaillogo')):
                             defaults[self.conf_LDAP_SYNC_USER_ATTRIBUTES[name]] = attribute[0]
                         else:
                             defaults[self.conf_LDAP_SYNC_USER_ATTRIBUTES[name]] = attribute[0].decode('utf-8')
@@ -441,7 +441,7 @@ class Command(BaseCommand):
                             name = unchanged_name.upper()
 
                         try:
-                            if ((name.lower() != 'thumbnailphoto') and (name.lower() != 'jpegphoto')):
+                            if ((name.lower() != 'thumbnailphoto') and (name.lower() != 'jpegphoto') and (name.lower() != 'thumbnaillogo') ):
                                 current_attr = getattr(profile, name)
                                 new_value = ''
                                 if (isinstance(attr, list)):
@@ -469,6 +469,13 @@ class Command(BaseCommand):
                                             actualPhoto = profile.thumbnailphoto.read()
                                         if (self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE == "upper"):
                                             actualPhoto = profile.THUMBNAILPHOTO.read()
+                                    elif (name.lower() == 'thumbnaillogo'):
+                                        if (not self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE):
+                                            actualPhoto = profile.thumbnailLogo.read()
+                                        if (self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE == "lower"):
+                                            actualPhoto = profile.thumbnaillogo.read()
+                                        if (self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE == "upper"):
+                                            actualPhoto = profile.THUMBNAILLOGO.read()                                            
                                     else:
                                         if (not self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE):
                                             actualPhoto = profile.jpegPhoto.read()
@@ -499,6 +506,19 @@ class Command(BaseCommand):
                                             if (actualPhoto):
                                                 profile.THUMBNAILPHOTO.delete()
                                             profile.THUMBNAILPHOTO.save(name=photo_name, content=ContentFile(newthumbPhoto))
+                                    elif (name.lower() == 'thumbnaillogo'):
+                                        if (not self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE):
+                                            if (actualPhoto):
+                                                profile.thumbnailLogo.delete()
+                                            profile.thumbnailLogo.save(name=photo_name, content=ContentFile(newthumbPhoto))
+                                        if (self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE == "lower"):
+                                            if (actualPhoto):
+                                                profile.thumbnaillogo.delete()
+                                            profile.thumbnaillogo.save(name=photo_name, content=ContentFile(newthumbPhoto))
+                                        if (self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE == "upper"):
+                                            if (actualPhoto):
+                                                profile.THUMBNAILLOGO.delete()
+                                            profile.THUMBNAILLOGO.save(name=photo_name, content=ContentFile(newthumbPhoto))                                            
                                     else:
                                         if (not self.conf_LDAP_SYNC_USER_CHANGE_FIELDCASE):
                                             if (actualPhoto):
