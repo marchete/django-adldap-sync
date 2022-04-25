@@ -1,6 +1,6 @@
 #django-adldap-sync
 
-
+I no longer work with Django, I can't even test pull request or test issues, so it's archived. Feel free to fork it and improve it.
 Overhaul of [django-ldap-sync].
 
 django-adldap-sync provides a Django management command that synchronizes LDAP
